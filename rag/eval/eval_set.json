@@ -1,0 +1,27 @@
+[
+  {
+    "question": "上个月 CREDIT 大于 100 的订单有哪些？",
+    "expected": "（请根据实际数据填写期望答案，如：订单ID xxx、xxx，金额分别为...）",
+    "ground_truth": "（同上，用于 RAGAS 端到端评分）",
+    "filter_meta": {
+      "source": "db"
+    }
+  },
+  {
+    "question": "用户 12345 最近一笔订单的支付类型是什么？",
+    "expected": "（请填写期望答案）",
+    "ground_truth": "（同上）",
+    "filter_meta": {
+      "source": "db",
+      "user_id": "12345"
+    }
+  },
+  {
+    "question": "本月各支付平台的订单数量统计？",
+    "expected": "（请填写期望答案）",
+    "ground_truth": "（同上）",
+    "filter_meta": {
+      "source": "db"
+    }
+  }
+]
