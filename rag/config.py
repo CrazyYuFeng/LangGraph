@@ -72,3 +72,23 @@ LANGFUSE_HOST = os.getenv("LANGFUSE_HOST", "https://cloud.langfuse.com")
 LANGFUSE_ENABLED = bool(
     LANGFUSE_PUBLIC_KEY and LANGFUSE_SECRET_KEY
 )  # 两个 key 都配置才启用
+
+# ===== LangSmith 可观测性（可选）=====
+# 在 https://smith.langchain.com 创建账号并获取 API Key。
+# 配置后自动启用 LangChain/LangGraph 自动追踪（LLM/检索/图节点调用无需改业务代码）。
+LANGSMITH_API_KEY = os.getenv("LANGSMITH_API_KEY", "")
+LANGSMITH_PROJECT = os.getenv("LANGSMITH_PROJECT", "langgraph-rag")
+LANGSMITH_ENDPOINT = os.getenv(
+    "LANGSMITH_ENDPOINT", "https://api.smith.langchain.com"
+)
+LANGSMITH_ENABLED = bool(LANGSMITH_API_KEY)
+
+# 配置了 key 时注入环境变量：LangChain/LangGraph 在每次 run 时按环境变量决定
+# 是否挂载 LangSmith tracer，因此必须保证在任何 LLM/检索调用之前生效。
+# config.py 是所有 rag 模块的公共底座（rag_chain/retriever/eval 以及
+# hybrid_agent 的 rag_agent 都经由它加载），import 即触发注入。
+if LANGSMITH_ENABLED:
+    os.environ.setdefault("LANGSMITH_TRACING", "true")  # 尊重用户显式设置
+    os.environ["LANGSMITH_API_KEY"] = LANGSMITH_API_KEY
+    os.environ.setdefault("LANGSMITH_PROJECT", LANGSMITH_PROJECT)
+    os.environ.setdefault("LANGSMITH_ENDPOINT", LANGSMITH_ENDPOINT)

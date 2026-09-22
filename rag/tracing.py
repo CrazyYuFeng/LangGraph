@@ -1,7 +1,13 @@
-"""rag/tracing.py —— Langfuse 可观测性封装
+"""rag/tracing.py —— 可观测性封装
 
-记录每次 RAG 查询的 trace：检索到的 chunk、rerank 分数、LLM 输入输出。
-用于定位缺陷（召回失败/污染/幻觉）和审计。
+Langfuse 手动 trace：
+    记录每次 RAG 查询的 trace：检索到的 chunk、rerank 分数、LLM 输入输出。
+    用于定位缺陷（召回失败/污染/幻觉）和审计。
+
+LangSmith 自动 trace：
+    由 rag/config.py 在 import 时注入环境变量（LANGSMITH_TRACING=true +
+    API Key + 项目名），LangChain/LangGraph 自动捕获所有 LLM/检索/图节点
+    调用，无需改业务代码。此处仅提供启用状态查询。
 
 设计：可选启用。
     - 未配置 LANGFUSE_PUBLIC_KEY/SECRET_KEY 时，get_tracing() 返回 None，
@@ -16,6 +22,7 @@
             trace.log_retrieval(docs)
             trace.log_generation(query, context, answer)
 """
+import os
 from typing import List, Optional
 
 from langchain_core.documents import Document
@@ -24,6 +31,9 @@ from rag.config import (
     LANGFUSE_ENABLED,
     LANGFUSE_HOST,
     LANGFUSE_PUBLIC_KEY,
+    LANGSMITH_API_KEY,
+    LANGSMITH_ENABLED,
+    LANGSMITH_PROJECT,
     LANGFUSE_SECRET_KEY,
 )
 from rag.logging_setup import get_logger
@@ -160,3 +170,16 @@ def get_tracing():
 def is_tracing_enabled() -> bool:
     """是否已启用 Langfuse trace。"""
     return _get_client() is not None
+
+
+def is_langsmith_enabled() -> bool:
+    """是否已启用 LangSmith 自动追踪（配置了 API Key 且环境变量注入成功）。
+
+    LangSmith 的 trace 由 LangChain/LangGraph 自动捕获，这里只做状态查询，
+    供日志和启动提示使用。
+    """
+    return (
+        LANGSMITH_ENABLED
+        and os.environ.get("LANGSMITH_TRACING", "").lower() == "true"
+        and os.environ.get("LANGSMITH_API_KEY") == LANGSMITH_API_KEY
+    )

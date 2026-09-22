@@ -44,6 +44,7 @@ langchain-tavily==0.2.18
 # ===== 评估 & 可观测性 =====
 ragas==0.4.3
 langfuse==4.14.2
+langsmith==0.10.15
 
 # ===== 数据 & 配置 =====
 pandas==3.0.5
